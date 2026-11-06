@@ -1,0 +1,13 @@
+[database]
+# Cambiar por la IP local del servidor central
+host = 192.168.1.10
+port = 5432
+user = escuadron_user
+password = StrongPassword123
+name = escuadron_horas
+# opciones: postgresql+psycopg2://... o sqlite:///./flight_hours.db
+url = postgresql+psycopg2://escuadron_user:StrongPassword123@192.168.1.10:5432/escuadron_horas
+
+[server]
+host = 0.0.0.0
+port = 8000

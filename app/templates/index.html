@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Control de Horas de Vuelo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">Escuadrón - Control Horas</a>
+        <div class="ms-auto d-flex align-items-center gap-2">
+          <span id="userBadge" class="badge bg-light text-primary d-none"></span>
+          <button id="logoutBtn" class="btn btn-outline-light btn-sm d-none" type="button">Cerrar sesión</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container py-4">
+      <div id="loginSection" class="row justify-content-center">
+        <div class="col-md-5">
+          <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Acceso al sistema</h5>
+            </div>
+            <div class="card-body">
+              <form id="loginForm">
+                <div class="mb-3">
+                  <label class="form-label">Usuario</label>
+                  <input id="loginUsername" class="form-control" placeholder="admin" required />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Contraseña</label>
+                  <input id="loginPassword" type="password" class="form-control" placeholder="admin123" required />
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+              </form>
+              <div id="loginError" class="alert alert-danger mt-3 d-none"></div>
+              <small class="text-muted d-block mt-3">Credencial por defecto del administrador: admin / admin123</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="appSection" class="d-none">
+        <div class="row g-4">
+          <div class="col-12">
+            <div id="roleNotice" class="alert alert-info d-none"></div>
+            <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-vuelo" data-bs-toggle="tab" data-bs-target="#panel-vuelo" type="button" role="tab">Registrar vuelo</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-admin" data-bs-toggle="tab" data-bs-target="#panel-admin" type="button" role="tab">Administración</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-gestion" data-bs-toggle="tab" data-bs-target="#panel-gestion" type="button" role="tab">Gestión avanzada</button>
+              </li>
+            </ul>
+          </div>
+
+          <div class="tab-content col-12">
+            <div class="tab-pane fade show active" id="panel-vuelo" role="tabpanel">
+              <div class="row g-4">
+                <div class="col-lg-4">
+                  <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-dark text-white">
+                      <strong>Registrar vuelo</strong>
+                    </div>
+                    <div class="card-body">
+                      <form id="flightForm" novalidate>
+                        <div class="mb-3">
+                          <label class="form-label">Misión</label>
+                          <select id="id_mision" class="form-select" required></select>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Aeronave</label>
+                          <select id="id_aeronave" class="form-select" required></select>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Piloto</label>
+                          <select id="id_piloto" class="form-select" required></select>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Grado en la fecha del vuelo</label>
+                          <input id="grado_piloto" class="form-control" readonly required />
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Copiloto</label>
+                          <select id="id_copiloto" class="form-select">
+                            <option value="">Sin copiloto</option>
+                          </select>
+                        </div>
+                        <div class="row">
+                          <div class="col-md-6">
+                            <label class="form-label">Origen</label>
+                            <input id="origen" class="form-control" required />
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label">Destino</label>
+                            <input id="destino" class="form-control" required />
+                          </div>
+                        </div>
+                        <div class="row mt-3">
+                          <div class="col-md-6">
+                            <label class="form-label">Fecha de realización</label>
+                            <input id="fecha_vuelo" type="date" class="form-control" required />
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label">Cantidad de horas en HH:MM</label>
+                            <input id="horas_vuelo" type="text" inputmode="numeric" maxlength="5" placeholder="03:30" class="form-control" required />
+                          </div>
+                        </div>
+                        <div class="row mt-3">
+                          <div class="col-md-6">
+                            <label class="form-label">Diurna</label>
+                            <input id="horas_diurnas" type="number" step="0.1" min="0" value="0" class="form-control" placeholder="Se deja en 0 si no aplica" />
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label">Nocturna</label>
+                            <input id="horas_nocturnas" type="number" step="0.1" min="0" value="0" class="form-control" />
+                          </div>
+                        </div>
+                        <div class="row mt-3">
+                          <div class="col-md-6">
+                            <label class="form-label">Instrucción</label>
+                            <input id="horas_nvg" type="number" step="0.1" min="0" value="0" class="form-control" />
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label">Instrumentos</label>
+                            <input id="horas_instrumentos" type="number" step="0.1" min="0" value="0" class="form-control" />
+                          </div>
+                        </div>
+                        <small class="text-muted d-block mt-2">Si no se especifica ningún valor de fracción, se contarán como vuelo diurno.</small>
+                        <div id="flightFormError" class="text-danger small mt-2 d-none"></div>
+                        <button type="submit" class="btn btn-success w-100 mt-4">Guardar vuelo</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-lg-8">
+                  <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                      <strong>Filtros</strong>
+                      <a class="btn btn-light btn-sm" id="exportExcelBtn" href="#">Exportar Excel</a>
+                    </div>
+                    <div class="card-body">
+                      <div class="row g-3">
+                        <div class="col-md-3">
+                          <label class="form-label">Piloto</label>
+                          <select id="filterPiloto" class="form-select">
+                            <option value="">Todos</option>
+                          </select>
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label">Aeronave</label>
+                          <select id="filterAeronave" class="form-select">
+                            <option value="">Todas</option>
+                          </select>
+                        </div>
+                        <div class="col-md-2">
+                          <label class="form-label">Desde</label>
+                          <input id="fechaDesde" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-2">
+                          <label class="form-label">Hasta</label>
+                          <input id="fechaHasta" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-2">
+                          <label class="form-label">Tipo</label>
+                          <select id="filterTipo" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="diurno">Diurno</option>
+                            <option value="nocturno">Nocturno</option>
+                            <option value="nvg">NVG</option>
+                            <option value="instrumentos">Instrumentos</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="mt-3 text-end">
+                        <button id="filterBtn" class="btn btn-primary">Consultar</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card shadow-sm border-0">
+                    <div class="card-header bg-dark text-white">
+                      <strong>Reporte de horas acumuladas</strong>
+                    </div>
+                    <div class="card-body p-0">
+                      <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle mb-0">
+                          <thead class="table-primary">
+                            <tr>
+                              <th>Fecha</th>
+                              <th>Misión</th>
+                              <th>Aeronave</th>
+                              <th>Piloto</th>
+                              <th>Grado</th>
+                              <th>Origen</th>
+                              <th>Destino</th>
+                              <th>Duración</th>
+                              <th>Hrs</th>
+                              <th>Diurna</th>
+                              <th>Nocturna</th>
+                              <th>NVG</th>
+                              <th>Instr.</th>
+                            </tr>
+                          </thead>
+                          <tbody id="reportTableBody"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="panel-admin" role="tabpanel">
+              <div class="row g-4">
+                <div class="col-lg-4">
+                  <div class="card shadow-sm border-0 mb-4" data-admin-only>
+                    <div class="card-header bg-warning text-dark">
+                      <strong>Administración</strong>
+                    </div>
+                    <div class="card-body">
+                      <form id="pilotForm" class="mb-4">
+                        <h6 class="fw-bold">Nuevo piloto</h6>
+                        <div class="mb-2">
+                          <select id="pilotGrado" class="form-select" required>
+                            <option value="">Seleccione grado o rango</option>
+                            <option value="Alférez">Alférez</option>
+                            <option value="Subteniente">Subteniente</option>
+                            <option value="Teniente">Teniente</option>
+                            <option value="Capitán">Capitán</option>
+                            <option value="Mayor">Mayor</option>
+                            <option value="Teniente Coronel">Teniente Coronel</option>
+                            <option value="Coronel">Coronel</option>
+                            <option value="General de Brigada">General de Brigada</option>
+                            <option value="General de División">General de División</option>
+                          </select>
+                        </div>
+                        <div class="mb-2">
+                          <input id="pilotNombres" class="form-control" placeholder="Nombres" required />
+                        </div>
+                        <div class="mb-2">
+                          <input id="pilotApellidos" class="form-control" placeholder="Apellidos" required />
+                        </div>
+                        <div class="mb-2">
+                          <input id="pilotIdentificacion" class="form-control" placeholder="Cédula / Identificación" required />
+                        </div>
+                        <div class="mb-2">
+                          <input id="pilotFuncion" class="form-control" placeholder="Función habitual" value="Tripulante" />
+                        </div>
+                        <fieldset class="mb-2">
+                          <legend class="form-label mb-1">Habilitaciones operacionales</legend>
+                          <div class="row g-1">
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-new" type="checkbox" value="Instructor" /> <span class="form-check-label">Instructor</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-new" type="checkbox" value="Capitán de nave" /> <span class="form-check-label">Capitán de nave</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-new" type="checkbox" value="Piloto regular" /> <span class="form-check-label">Piloto regular</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-new" type="checkbox" value="IFR" /> <span class="form-check-label">IFR</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-new" type="checkbox" value="NVG" /> <span class="form-check-label">NVG</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-new" type="checkbox" value="Inglés ICAO 4" /> <span class="form-check-label">Inglés ICAO 4</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-new" type="checkbox" value="Táctico" /> <span class="form-check-label">Táctico</span></label></div>
+                          </div>
+                        </fieldset>
+                        <fieldset class="mb-2">
+                          <legend class="form-label mb-1">Habilitación de Aeronaves</legend>
+                          <div class="row g-1">
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-aircraft-new" type="checkbox" value="C-172" /> <span class="form-check-label">C-172</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-aircraft-new" type="checkbox" value="EMB-312/T-27" /> <span class="form-check-label">EMB-312/T-27</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-aircraft-new" type="checkbox" value="T-41" /> <span class="form-check-label">T-41</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-aircraft-new" type="checkbox" value="Mxt-7-180" /> <span class="form-check-label">Mxt-7-180</span></label></div>
+                          </div>
+                        </fieldset>
+                        <button class="btn btn-primary w-100" type="submit">Guardar piloto</button>
+                      </form>
+
+                      <form id="aircraftForm" class="mb-3">
+                        <h6 class="fw-bold">Nueva aeronave</h6>
+                        <div class="mb-2">
+                          <input id="aircraftMatricula" class="form-control" placeholder="Matrícula (ej. F-101)" required />
+                        </div>
+                        <div class="mb-2">
+                          <select id="aircraftModelo" class="form-select" required>
+                            <option value="">Seleccione el tipo de aeronave</option>
+                            <option value="C-172">C-172</option>
+                            <option value="EMB-312/T-27">EMB-312/T-27</option>
+                            <option value="T-41">T-41</option>
+                            <option value="Mxt-7-180">Mxt-7-180</option>
+                          </select>
+                        </div>
+                        <div class="mb-2">
+                          <input id="aircraftHoras" type="number" step="0.1" class="form-control" placeholder="Horas iniciales de vuelo (ej. 125.5)" value="" />
+                        </div>
+                        <button class="btn btn-primary w-100" type="submit">Guardar aeronave</button>
+                      </form>
+
+                      <form id="missionForm">
+                        <h6 class="fw-bold">Nueva misión</h6>
+                        <div class="mb-2">
+                          <input id="missionCode" class="form-control" placeholder="Código / número de misión" required />
+                        </div>
+                        <div class="mb-2">
+                          <input id="missionTipo" class="form-control" placeholder="Tipo de misión (patrulla, traslado, apoyo, etc.)" required />
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label mb-1">Fecha de salida</label>
+                          <input id="missionFecha" type="date" class="form-control" required />
+                        </div>
+                        <div class="mb-2">
+                          <textarea id="missionObs" class="form-control" rows="2" placeholder="Observaciones o notas de operación"></textarea>
+                        </div>
+                        <button class="btn btn-primary w-100" type="submit">Guardar misión</button>
+                      </form>
+
+                      <form id="certForm" class="mt-4">
+                        <h6 class="fw-bold">Nueva cualificación del piloto</h6>
+                        <div class="mb-2">
+                          <select id="certPiloto" class="form-select" required></select>
+                        </div>
+                        <div class="mb-2">
+                          <select id="certAeronave" class="form-select">
+                            <option value="">Sin aeronave específica</option>
+                          </select>
+                        </div>
+                        <div class="mb-2">
+                          <input id="certModelo" class="form-control" placeholder="Modelo de aeronave o tipo (opcional)" />
+                        </div>
+                        <fieldset class="mb-2">
+                          <legend class="form-label mb-1">Habilitaciones operacionales</legend>
+                          <div class="row g-1">
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input cert-type" type="checkbox" value="Instructor" /> <span class="form-check-label">Instructor</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input cert-type" type="checkbox" value="Capitán de nave" /> <span class="form-check-label">Capitán de nave</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input cert-type" type="checkbox" value="Piloto regular" /> <span class="form-check-label">Piloto regular</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input cert-type" type="checkbox" value="IFR" /> <span class="form-check-label">IFR</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input cert-type" type="checkbox" value="NVG" /> <span class="form-check-label">NVG</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input cert-type" type="checkbox" value="Inglés ICAO 4" /> <span class="form-check-label">Inglés ICAO 4</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input cert-type" type="checkbox" value="Táctico" /> <span class="form-check-label">Táctico</span></label></div>
+                          </div>
+                        </fieldset>
+                        <div class="mb-2">
+                          <input id="certNivel" class="form-control" placeholder="Nivel o categoría (ej. tipo, instructor, avanzado)" value="Tipo" />
+                        </div>
+                        <div class="mb-2">
+                          <textarea id="certObs" class="form-control" rows="2" placeholder="Observaciones de la cualificación"></textarea>
+                        </div>
+                        <button class="btn btn-primary w-100" type="submit">Guardar cualificación</button>
+                      </form>
+
+                      <button id="seedDemoBtn" class="btn btn-outline-dark w-100 mt-3">Cargar datos de prueba</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-lg-8">
+                  <div class="card shadow-sm border-0">
+                    <div class="card-header bg-dark text-white">
+                      <strong>Listado rápido</strong>
+                    </div>
+                    <div class="card-body">
+                      <div class="row g-4">
+                        <div class="col-md-4">
+                          <h6 class="fw-bold">Pilotos</h6>
+                          <ul id="adminPilotsList" class="list-group list-group-flush"></ul>
+                        </div>
+                        <div class="col-md-4">
+                          <h6 class="fw-bold">Aeronaves</h6>
+                          <ul id="adminAircraftList" class="list-group list-group-flush"></ul>
+                        </div>
+                        <div class="col-md-4">
+                          <h6 class="fw-bold">Misiones</h6>
+                          <ul id="adminMissionList" class="list-group list-group-flush"></ul>
+                        </div>
+                      </div>
+                      <div class="mt-4">
+                        <h6 class="fw-bold">Cualificaciones</h6>
+                        <ul id="adminCertList" class="list-group list-group-flush"></ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="panel-gestion" role="tabpanel">
+              <div class="row g-4">
+                <div class="col-lg-5">
+                  <div class="card shadow-sm border-0 mb-4" data-admin-only>
+                    <div class="card-header bg-dark text-white">
+                      <strong>Crear usuario</strong>
+                    </div>
+                    <div class="card-body">
+                      <form id="userCreateForm">
+                        <div class="mb-3">
+                          <label class="form-label">Usuario</label>
+                          <input id="newUserName" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Contraseña</label>
+                          <input id="newUserPassword" type="password" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Rol</label>
+                          <select id="newUserRole" class="form-select">
+                            <option value="user">Usuario</option>
+                            <option value="admin">Administrador</option>
+                          </select>
+                        </div>
+                        <button class="btn btn-success w-100" type="submit">Crear usuario</button>
+                      </form>
+                    </div>
+                  </div>
+
+                  <div class="card shadow-sm border-0" data-admin-only>
+                    <div class="card-header bg-primary text-white">
+                      <strong>Buscar pilotos</strong>
+                    </div>
+                    <div class="card-body">
+                      <input id="pilotSearch" class="form-control mb-3" placeholder="Buscar por nombre, grado o identificación" autocomplete="off" />
+                      <div id="pilotSearchResults" class="list-group mb-3"></div>
+                      <form id="pilotAdminForm" class="d-none border-top pt-3">
+                        <h6 class="fw-bold">Editar piloto seleccionado</h6>
+                        <input type="hidden" id="pilotAdminId" />
+                        <div class="mb-2">
+                          <label class="form-label">Grado</label>
+                          <select id="pilotAdminGrado" class="form-select" required>
+                            <option value="">Seleccione grado o rango</option>
+                            <option value="Alférez">Alférez</option>
+                            <option value="Subteniente">Subteniente</option>
+                            <option value="Teniente">Teniente</option>
+                            <option value="Capitán">Capitán</option>
+                            <option value="Mayor">Mayor</option>
+                            <option value="Teniente Coronel">Teniente Coronel</option>
+                            <option value="Coronel">Coronel</option>
+                            <option value="General de Brigada">General de Brigada</option>
+                            <option value="General de División">General de División</option>
+                          </select>
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Nombres</label>
+                          <input id="pilotAdminNombres" class="form-control" required />
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Apellidos</label>
+                          <input id="pilotAdminApellidos" class="form-control" required />
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Identificación</label>
+                          <input id="pilotAdminIdentificacion" class="form-control" required />
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Función</label>
+                          <input id="pilotAdminFuncion" class="form-control" required />
+                        </div>
+                        <fieldset class="mb-2">
+                          <legend class="form-label mb-1">Habilitaciones operacionales</legend>
+                          <div class="row g-1">
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-edit" type="checkbox" value="Instructor" /> <span class="form-check-label">Instructor</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-edit" type="checkbox" value="Capitán de nave" /> <span class="form-check-label">Capitán de nave</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-edit" type="checkbox" value="Piloto regular" /> <span class="form-check-label">Piloto regular</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-edit" type="checkbox" value="IFR" /> <span class="form-check-label">IFR</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-edit" type="checkbox" value="NVG" /> <span class="form-check-label">NVG</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-edit" type="checkbox" value="Inglés ICAO 4" /> <span class="form-check-label">Inglés ICAO 4</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-cert-edit" type="checkbox" value="Táctico" /> <span class="form-check-label">Táctico</span></label></div>
+                          </div>
+                        </fieldset>
+                        <fieldset class="mb-2">
+                          <legend class="form-label mb-1">Habilitación de Aeronaves</legend>
+                          <div class="row g-1">
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-aircraft-edit" type="checkbox" value="C-172" /> <span class="form-check-label">C-172</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-aircraft-edit" type="checkbox" value="EMB-312/T-27" /> <span class="form-check-label">EMB-312/T-27</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-aircraft-edit" type="checkbox" value="T-41" /> <span class="form-check-label">T-41</span></label></div>
+                            <div class="col-sm-6"><label class="form-check"><input class="form-check-input pilot-aircraft-edit" type="checkbox" value="Mxt-7-180" /> <span class="form-check-label">Mxt-7-180</span></label></div>
+                          </div>
+                        </fieldset>
+                        <button class="btn btn-primary w-100" type="submit">Guardar cambios del piloto</button>
+                      </form>
+                    </div>
+                  </div>
+
+                  <div class="card shadow-sm border-0 mt-4" data-admin-only>
+                    <div class="card-header bg-success text-white">
+                      <strong>Buscar vuelos</strong>
+                    </div>
+                    <div class="card-body">
+                      <input id="flightSearch" class="form-control mb-3" placeholder="Buscar por piloto, fecha, misión, origen o destino" autocomplete="off" />
+                      <div id="flightSearchResults" class="list-group mb-3"></div>
+                      <form id="flightAdminForm" class="d-none border-top pt-3">
+                        <h6 class="fw-bold">Editar vuelo seleccionado</h6>
+                        <input type="hidden" id="flightAdminId" />
+                        <div class="mb-2">
+                          <label class="form-label">Misión</label>
+                          <select id="flightAdminMission" class="form-select" required></select>
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Aeronave</label>
+                          <select id="flightAdminAeronave" class="form-select" required></select>
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Piloto</label>
+                          <select id="flightAdminPiloto" class="form-select" required></select>
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Grado en la fecha del vuelo</label>
+                          <input id="flightAdminGrado" class="form-control" readonly required />
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Copiloto</label>
+                          <select id="flightAdminCopiloto" class="form-select"></select>
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Origen</label>
+                          <input id="flightAdminOrigen" class="form-control" required />
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Destino</label>
+                          <input id="flightAdminDestino" class="form-control" required />
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Fecha</label>
+                          <input id="flightAdminFecha" type="date" class="form-control" required />
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Horas totales (HH:MM)</label>
+                          <input id="flightAdminHoras" class="form-control" placeholder="HH:MM" required />
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Horas diurnas</label>
+                          <input id="flightAdminDiurnas" type="number" step="0.1" class="form-control" />
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Horas nocturnas</label>
+                          <input id="flightAdminNocturnas" type="number" step="0.1" class="form-control" />
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Horas NVG</label>
+                          <input id="flightAdminNvg" type="number" step="0.1" class="form-control" />
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Horas instrumentos</label>
+                          <input id="flightAdminInstrumentos" type="number" step="0.1" class="form-control" />
+                        </div>
+                        <button class="btn btn-success w-100" type="submit">Guardar cambios del vuelo</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-lg-7">
+                  <div class="card shadow-sm border-0 mb-4" data-admin-only>
+                    <div class="card-header bg-warning text-dark">
+                      <strong>Usuarios del sistema</strong>
+                    </div>
+                    <div class="card-body p-0">
+                      <div class="table-responsive">
+                        <table class="table mb-0">
+                          <thead class="table-light">
+                            <tr>
+                              <th>ID</th>
+                              <th>Usuario</th>
+                              <th>Rol</th>
+                              <th>Estado</th>
+                              <th>Acción</th>
+                            </tr>
+                          </thead>
+                          <tbody id="adminUsersTableBody"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card shadow-sm border-0 mb-4" data-admin-only>
+                    <div class="card-header bg-secondary text-white">
+                      <strong>Pilotos</strong>
+                    </div>
+                    <div class="card-body p-0">
+                      <div class="table-responsive">
+                        <table class="table mb-0">
+                          <thead class="table-light">
+                            <tr>
+                              <th>ID</th>
+                              <th>Nombre</th>
+                              <th>Función</th>
+                              <th>Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody id="adminPilotsTableBody"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card shadow-sm border-0" data-admin-only>
+                    <div class="card-header bg-success text-white">
+                      <strong>Vuelos</strong>
+                    </div>
+                    <div class="card-body p-0">
+                      <div class="table-responsive">
+                        <table class="table mb-0">
+                          <thead class="table-light">
+                            <tr>
+                              <th>ID</th>
+                              <th>Fecha</th>
+                              <th>Piloto</th>
+                              <th>Misión</th>
+                              <th>Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody id="adminFlightsTableBody"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card shadow-sm border-0 mt-4" data-admin-only>
+                    <div class="card-header bg-info text-dark">
+                      <strong>Aeronaves</strong>
+                    </div>
+                    <div class="card-body">
+                      <div class="table-responsive">
+                        <table class="table mb-0">
+                          <thead class="table-light">
+                            <tr>
+                              <th>Matrícula</th>
+                              <th>Tipo</th>
+                              <th>Horas actuales</th>
+                              <th>Acción</th>
+                            </tr>
+                          </thead>
+                          <tbody id="adminAircraftTableBody"></tbody>
+                        </table>
+                      </div>
+                      <form id="aircraftAdminForm" class="d-none border-top pt-3 mt-3">
+                        <input type="hidden" id="aircraftAdminId" />
+                        <div class="mb-2">
+                          <label class="form-label">Matrícula</label>
+                          <input id="aircraftAdminMatricula" class="form-control" readonly />
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label">Tipo de aeronave</label>
+                          <select id="aircraftAdminModelo" class="form-select" required>
+                            <option value="C-172">C-172</option>
+                            <option value="EMB-312/T-27">EMB-312/T-27</option>
+                            <option value="T-41">T-41</option>
+                            <option value="Mxt-7-180">Mxt-7-180</option>
+                          </select>
+                        </div>
+                        <button class="btn btn-info w-100" type="submit">Guardar tipo de aeronave</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

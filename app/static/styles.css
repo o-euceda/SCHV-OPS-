@@ -1,0 +1,22 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+.card {
+  border-radius: 14px;
+}
+
+.table th,
+.table td {
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.btn {
+  border-radius: 10px;
+}
+
+.form-control,
+.form-select {
+  border-radius: 10px;
+}
